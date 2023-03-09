@@ -2,17 +2,21 @@
 import { resolve } from "path";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
+import react from '@vitejs/plugin-react'
 import legacy from "@vitejs/plugin-legacy";
 
 export default defineConfig({
+  server: {
+    port: process.env.PORT || 3563
+  },
   build: {
     minify: false,
     lib: {
       // Could also be a dictionary or array of multiple entry points
       entry: resolve(__dirname, "src/main.ts"),
-      name: "KeepIt",
+      name: "StorageHub",
       // the proper extensions will be added
-      fileName: "keep-it",
+      fileName: "storage-hub"
     },
     rollupOptions: {
       // 确保外部化处理那些你不想打包进库的依赖
@@ -26,9 +30,12 @@ export default defineConfig({
     },
   },
   plugins: [
+    react(),
     dts(),
     // legacy({
-    //   targets: ["defaults", "not IE 11"],
-    // }),
+    //   "targets": {
+    //     'ie': 9
+    //   },
+    // })
   ],
 });

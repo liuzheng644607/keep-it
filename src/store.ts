@@ -1,24 +1,29 @@
 import EventEmitter from "./EventEmitter";
 import { Provider, StoreValue } from "./typings";
 
-const DEFAULT_NAME_SPACE = "ns-keep-it";
+const DEFAULT_NAME_SPACE = "ns-storage-hub";
 const DEFAULT_STORAGE_NAME = "LNE8L2IIABS";
 
-export default class Storage<
+export default class Storage<T extends Record<string, any> = {},
   P extends Provider = Provider
 > extends EventEmitter<{
   // expired: (key: string, value: any) => void;
   // removed: (key: string, value: any) => void;
   // added: (key: string, value: any) => void;
 }> {
-  static defaultNamespace = DEFAULT_NAME_SPACE;
-  static STORAGE_NAME = DEFAULT_STORAGE_NAME;
+  readonly provider: P;
+
+  readonly namespace: string;
+
+  readonly KEY_SEPARATOR = '/';
 
   constructor(
-    public readonly provider: P,
-    public readonly namespace: string = Storage.defaultNamespace
+    provider: P,
+    namespace: string = DEFAULT_NAME_SPACE
   ) {
     super();
+    this.provider = provider;
+    this.namespace = namespace;
     this._checkAll();
   }
 
@@ -52,10 +57,10 @@ export default class Storage<
     return value;
   }
 
-  private _checkExpiresByFullKey(fullKey: string): boolean {
+  private _checkExpiresByFullKey(fullKey: string) {
     const key = fullKey;
     const storeValue = this._getWrapperValue(key);
-    if (!storeValue || storeValue.storageName !== Storage.STORAGE_NAME) {
+    if (!storeValue || storeValue.storageName !== DEFAULT_STORAGE_NAME) {
       return false;
     }
     if (storeValue.deadline && this._now >= storeValue.deadline) {
@@ -86,7 +91,7 @@ export default class Storage<
     return {
       value,
       deadline: expires ? this._now + expires : undefined,
-      storageName: Storage.STORAGE_NAME,
+      storageName: DEFAULT_STORAGE_NAME,
     };
   }
 
@@ -96,7 +101,7 @@ export default class Storage<
   }
 
   private _getStorageKey(k: string) {
-    return `${this.namespace}-${k}`;
+    return `${this.namespace}${this.KEY_SEPARATOR}${k}`;
   }
 
   /**
@@ -104,10 +109,10 @@ export default class Storage<
    * @param k
    * @returns
    */
-  getItem(k: string) {
+  getItem<K extends keyof T = string>(k: K): T[K] | null {
     if (!this.provider) return null;
     if (!k) return null;
-    const key = this._getStorageKey(k);
+    const key = this._getStorageKey(k as string);
     const isExpires = this._checkExpiresByFullKey(key);
     if (isExpires) {
       this._removeItemByFullKey(key);
@@ -123,13 +128,14 @@ export default class Storage<
    * @param value 要存的值
    * @param expires 多少毫秒后过期
    */
-  setItem(k: string, value: any, expires?: number) {
-    const key = this._getStorageKey(k);
-    let val = value;
+  setItem<K extends keyof T = string>(k: K, value: T[K], options?: {
+    expires?: number
+  }) {
+    const { expires } = options || {};
+    const key = this._getStorageKey(k as string);
+    let val = value as string;
     // include null
-    if (typeof value === "object") {
-      val = JSON.stringify(value);
-    }
+    val = JSON.stringify(value);
     const storeValue = this._makeStoreValue(val, expires);
     const storeWrapper = JSON.stringify(storeValue);
     this.provider.setItem(key, storeWrapper);
@@ -140,9 +146,9 @@ export default class Storage<
    * @param k
    * @returns
    */
-  removeItem(k: string) {
+  removeItem<K extends keyof T = string>(k: K) {
     if (!k) return;
-    const key = this._getStorageKey(k);
+    const key = this._getStorageKey(k as string);
     this._removeItemByFullKey(key);
   }
 

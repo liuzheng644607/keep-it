@@ -1,18 +1,20 @@
 export default class EventEmitter<T extends Record<string | symbol, any>> {
 
-  listenerMap = new Map<keyof T, Array<(...args: any[]) => void>>();
+  private readonly _listenerMap = new Map<keyof T, Array<(...args: any[]) => void>>();
 
   on<K extends keyof T>(event: K, listener: T[K]) {
-    if (!this.listenerMap.has(event)) {
-      this.listenerMap.set(event, []);
+    if (!this._listenerMap.has(event)) {
+      this._listenerMap.set(event, []);
     }
-    this.listenerMap.get(event)?.push(listener);
+    this._listenerMap.get(event)?.push(listener);
     return this;
   }
 
-  off<K extends keyof T>(event: K, listener: T[K]) {
-    const listeners = this.listenerMap.get(event);
-    if (listeners && listeners.length > 0) {
+  off<K extends keyof T>(event: K, listener?: T[K]) {
+    const listeners = this._listenerMap.get(event);
+    if (!listener) {
+      this._listenerMap.delete(event);
+    } else if (listeners && listeners.length > 0) {
       const index = listeners.indexOf(listener);
       if (index > -1) {
         listeners.splice(index, 1);
@@ -22,7 +24,7 @@ export default class EventEmitter<T extends Record<string | symbol, any>> {
   }
 
   emit<K extends keyof T>(event: K, ...args: Parameters<T[K]>) {
-    const listeners = this.listenerMap.get(event);
+    const listeners = this._listenerMap.get(event);
     if (!listeners || listeners.length === 0) return false;
     listeners.forEach((listener) => {
       listener(...args);
@@ -32,8 +34,8 @@ export default class EventEmitter<T extends Record<string | symbol, any>> {
 
   once<K extends keyof T>(event: K, listener: T[K]) {
     const handler: any = (...args: any) => {
-      this.off(event, handler);
       listener(...args);
+      this.off(event, handler);
     }
     this.on(event, handler);
     return this;
