@@ -12,7 +12,19 @@ npm i storage-hub
 
 ### basic
 ```typescript
-import storageHub from 'storage-hub';
+import StorageHub, { LocalStorageProvider, MemoryStorageProvider } from 'storage-hub';
+
+type StoreKV = {
+  name: string;
+  age: number;
+  favorite?: Record<string, any>[];
+}
+
+const myStorageHub = new StorageHub<StoreKV>(new LocalStorageProvider);
+
+myStorageHub.setItem('name', 'lily');
+myStorageHub.setItem('age', 10);
+myStorageHub.setItem('favorite', [{ type: '😄'}],  { expires: 24 * 60 * 60 * 1000 });
 
 
 ```

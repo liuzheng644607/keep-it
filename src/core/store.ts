@@ -1,10 +1,11 @@
-import EventEmitter from "./EventEmitter";
-import { Provider, StoreValue } from "./typings";
+import EventEmitter from "../event/EventEmitter";
+import { Provider, StoreValue } from "../typings";
+import PriorityQueue from '../queue/PriorityQueue';
 
 const DEFAULT_NAME_SPACE = "ns-storage-hub";
 const DEFAULT_STORAGE_NAME = "LNE8L2IIABS";
 
-export default class Storage<T extends Record<string, any> = {},
+export default class Storage<T extends Record<string, any>,
   P extends Provider = Provider
 > extends EventEmitter<{
   // expired: (key: string, value: any) => void;
@@ -16,6 +17,13 @@ export default class Storage<T extends Record<string, any> = {},
   readonly namespace: string;
 
   readonly KEY_SEPARATOR = '/';
+
+  private readonly _queue = new PriorityQueue<StoreValue>((a, b) => {
+    if (a.deadline && b.deadline) {
+      return a.deadline < b.deadline;
+    }
+    return false;
+  });
 
   constructor(
     provider: P,
