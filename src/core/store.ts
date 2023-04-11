@@ -1,6 +1,6 @@
 import EventEmitter from "../event/EventEmitter";
 import { Provider, StoreValue } from "../typings";
-import PriorityQueue from '../queue/PriorityQueue';
+// import PriorityQueue from '../queue/PriorityQueue';
 
 const DEFAULT_NAME_SPACE = "ns-storage-hub";
 const DEFAULT_STORAGE_NAME = "LNE8L2IIABS";
@@ -18,12 +18,12 @@ export default class Storage<T extends Record<string, any>,
 
   readonly KEY_SEPARATOR = '/';
 
-  private readonly _queue = new PriorityQueue<StoreValue>((a, b) => {
-    if (a.deadline && b.deadline) {
-      return a.deadline < b.deadline;
-    }
-    return false;
-  });
+  // private readonly _queue = new PriorityQueue<StoreValue>((a, b) => {
+  //   if (a.deadline && b.deadline) {
+  //     return a.deadline < b.deadline;
+  //   }
+  //   return false;
+  // });
 
   constructor(
     provider: P,
