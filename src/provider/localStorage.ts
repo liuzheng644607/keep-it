@@ -1,7 +1,21 @@
 import { Provider } from '../typings';
 
-export default class LocalStorageProvider implements Provider {
+export default class LocalStorageProvider extends Provider  {
   private _cache = localStorage;
+
+  constructor() {
+    super();
+    this.attachEvent();
+  }
+
+  private handleStorageChange(event: StorageEvent) {
+    const { key, oldValue, newValue } = event;
+    this.eventEmitter.emit('storage', { key, oldValue, newValue });
+  }
+
+  private attachEvent() {
+    window.addEventListener('storage', this.handleStorageChange)
+  }
 
   setItem(key: string, value: string) {
     return this._cache.setItem(key, value);

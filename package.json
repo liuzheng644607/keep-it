@@ -9,12 +9,12 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/keep-it.umd.cjs",
-  "module": "./dist/keep-it.js",
+  "main": "./dist/index.umd.cjs",
+  "module": "./dist/index.js",
   "exports": {
     ".": {
-      "import": "./dist/keep-it.js",
-      "require": "./dist/keep-it.umd.cjs"
+      "import": "./dist/index.js",
+      "require": "./dist/index.umd.cjs"
     }
   },
   "scripts": {
